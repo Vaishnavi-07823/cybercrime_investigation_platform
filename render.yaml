@@ -1,0 +1,130 @@
+databases:
+  - name: cip-postgres
+    databaseName: cybercrime
+    user: cybercrime
+    plan: free
+
+redis:
+  - name: cip-redis
+    plan: free
+    ipAllowList: []
+
+services:
+  # MinIO Object Store (Private service with persistent disk)
+  - type: private
+    name: cip-minio
+    env: image
+    image: minio/minio:latest
+    startCommand: server /data --console-address ":9001"
+    disk:
+      name: minio-data
+      mountPath: /data
+      sizeGB: 10
+    envVars:
+      - key: MINIO_ROOT_USER
+        value: minioadmin
+      - key: MINIO_ROOT_PASSWORD
+        value: minioadmin123
+
+  # Neo4j Graph Database (Private service with persistent disk)
+  - type: private
+    name: cip-neo4j
+    env: image
+    image: neo4j:5-community
+    disk:
+      name: neo4j-data
+      mountPath: /data
+      sizeGB: 10
+    envVars:
+      - key: NEO4J_AUTH
+        value: neo4j/neo4j_dev_password
+
+  # OpenSearch Search Engine (Private service with persistent disk)
+  - type: private
+    name: cip-opensearch
+    env: image
+    image: opensearchproject/opensearch:2
+    disk:
+      name: opensearch-data
+      mountPath: /usr/share/opensearch/data
+      sizeGB: 10
+    envVars:
+      - key: discovery.type
+        value: single-node
+      - key: DISABLE_SECURITY_PLUGIN
+        value: "true"
+      - key: OPENSEARCH_JAVA_OPTS
+        value: "-Xms512m -Xmx512m"
+      - key: DISABLE_INSTALL_DEMO_CONFIG
+        value: "true"
+
+  # FastAPI Web Service
+  - type: web
+    name: cip-backend
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: backend
+    plan: starter
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cip-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromRedis:
+          name: cip-redis
+          property: connectionString
+      - key: MINIO_ENDPOINT
+        value: cip-minio:9000
+      - key: MINIO_ACCESS_KEY
+        value: minioadmin
+      - key: MINIO_SECRET_KEY
+        value: minioadmin123
+      - key: OPENSEARCH_URL
+        value: http://cip-opensearch:9200
+      - key: NEO4J_URI
+        value: bolt://cip-neo4j:7687
+      - key: NEO4J_USER
+        value: neo4j
+      - key: NEO4J_PASSWORD
+        value: neo4j_dev_password
+      - key: CORS_ORIGINS
+        value: "*" # User should override this in Render dashboard with Vercel frontend URL.
+
+  # Celery Worker Background Service
+  - type: worker
+    name: cip-worker
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: backend
+    plan: starter
+    dockerCommand: celery -A app.tasks.celery_app.celery_app worker --loglevel=INFO
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cip-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromRedis:
+          name: cip-redis
+          property: connectionString
+      - key: MINIO_ENDPOINT
+        value: cip-minio:9000
+      - key: MINIO_ACCESS_KEY
+        value: minioadmin
+      - key: MINIO_SECRET_KEY
+        value: minioadmin123
+      - key: OPENSEARCH_URL
+        value: http://cip-opensearch:9200
+      - key: NEO4J_URI
+        value: bolt://cip-neo4j:7687
+      - key: NEO4J_USER
+        value: neo4j
+      - key: NEO4J_PASSWORD
+        value: neo4j_dev_password
