@@ -5,13 +5,31 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.security import create_access_token, verify_password
+from app.core.security import create_access_token, verify_password, hash_password
 from app.db.session import get_db
 from app.models import User
-from app.schemas import LoginRequest, TokenResponse
+from app.schemas import LoginRequest, TokenResponse, UserCreate, UserRead
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+
+@router.post("/register", response_model=UserRead)
+def register(payload: UserCreate, db: Session = Depends(get_db)) -> UserRead:
+    if db.scalar(select(User).where(User.email == payload.email.casefold())):
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    new_user = User(
+        email=payload.email.casefold(),
+        full_name=payload.full_name,
+        password_hash=hash_password(payload.password),
+        role="analyst",
+        is_active=True,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
 
 
 @router.post("/login", response_model=TokenResponse)

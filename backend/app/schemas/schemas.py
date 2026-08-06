@@ -11,8 +11,14 @@ class ORMModel(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
+
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    full_name: str
 
 
 class TokenResponse(BaseModel):
@@ -24,7 +30,7 @@ class TokenResponse(BaseModel):
 
 class UserRead(ORMModel):
     id: str
-    email: EmailStr
+    email: str
     full_name: str
     role: str
     is_active: bool
