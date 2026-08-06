@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2026-08-04T08:10:00Z",
+    "user": "finance.manager@example.local",
+    "source_ip": "203.0.113.10",
+    "country": "IN",
+    "device_id": "FIN-LAPTOP-01",
+    "managed": true,
+    "success": true,
+    "application": "Microsoft 365",
+    "session_id": "BASELINE-001"
+  },
+  {
+    "timestamp": "2026-08-05T09:14:10Z",
+    "user": "finance.manager@example.local",
+    "source_ip": "198.51.100.81",
+    "country": "NL",
+    "device_id": "UNKNOWN-DEVICE",
+    "managed": false,
+    "success": true,
+    "application": "Microsoft 365",
+    "session_id": "SUSPICIOUS-001",
+    "is_new_country": true,
+    "risk_level": "high"
+  }
+]

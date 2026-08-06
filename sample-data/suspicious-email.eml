@@ -1,0 +1,18 @@
+From: "Trusted Supplier Accounts" <accounts@trusted-supp1ier.example>
+To: Finance Manager <finance.manager@example.local>
+Reply-To: payments@secure-mailbox.example
+Date: Tue, 05 Aug 2026 09:31:05 +0000
+Message-ID: <bec-demo-001@trusted-supp1ier.example>
+Subject: Urgent: Updated bank account for invoice INV-2026-081
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Authentication-Results: mx.example.local; spf=fail smtp.mailfrom=trusted-supp1ier.example; dkim=none; dmarc=fail
+
+Dear Finance Team,
+
+Our banking details have changed. Please use account GB00-DEMO-9988 for invoice INV-2026-081 and confirm today.
+
+Review the updated instruction at https://trusted-supp1ier.example/invoice/INV-2026-081.
+
+Regards,
+Accounts Team

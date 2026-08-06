@@ -1,0 +1,162 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cybercrime}
+      POSTGRES_USER: ${POSTGRES_USER:-cybercrime}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cybercrime_dev_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cybercrime} -d ${POSTGRES_DB:-cybercrime}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin123}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >-
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin123}; do sleep 2; done;
+      mc mb --ignore-existing local/${MINIO_EVIDENCE_BUCKET:-evidence};
+      mc mb --ignore-existing local/${MINIO_REPORT_BUCKET:-reports};
+      exit 0;
+      "
+
+  opensearch:
+    image: opensearchproject/opensearch:2
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo4j_dev_password}
+      NEO4J_server_memory_heap_initial__size: 256m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 256m
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u ${NEO4J_USER:-neo4j} -p ${NEO4J_PASSWORD:-neo4j_dev_password} 'RETURN 1;' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+      - ./scripts:/workspace/scripts:ro
+      - ./sample-data:/workspace/sample-data:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      opensearch:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+
+  worker:
+    build:
+      context: ./backend
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+      - ./scripts:/workspace/scripts:ro
+      - ./sample-data:/workspace/sample-data:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    command: celery -A app.tasks.celery_app.celery_app worker --loglevel=INFO
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  opensearch-data:
+  neo4j-data:
+  neo4j-logs:
+  frontend-node-modules:

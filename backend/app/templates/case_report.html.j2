@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ case.title }} — {{ case.id }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; color: #1f2937; }
+    h1, h2 { color: #0f3d63; }
+    .classification { font-weight: bold; text-transform: uppercase; }
+    .claim { margin: 16px 0; padding: 12px; border-left: 4px solid #3b82f6; }
+    code { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <p class="classification">{{ case.classification }}</p>
+  <h1>Cybercrime Investigation Case Report</h1>
+  <h2>{{ case.id }} — {{ case.title }}</h2>
+  {% for claim in approved_claims %}
+  <section class="claim">
+    <strong>{{ claim.id }} · {{ claim.reasoning_type }} · {{ claim.confidence }}</strong>
+    <p>{{ claim.text }}</p>
+    <p>References: {{ (claim.evidence_refs + claim.event_refs + claim.finding_refs) | join(', ') }}</p>
+  </section>
+  {% endfor %}
+</body>
+</html>

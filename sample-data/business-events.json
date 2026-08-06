@@ -1,0 +1,43 @@
+[
+  {
+    "event_type": "identity.oauth_consent",
+    "event_action": "grant",
+    "event_outcome": "success",
+    "event_time": "2026-08-05T09:16:03Z",
+    "actor": {"user": "finance.manager@example.local", "email": "finance.manager@example.local"},
+    "source": {"ip": "198.51.100.81"},
+    "destination": {"application": "Document Sync Utility"},
+    "payload": {
+      "application": "Document Sync Utility",
+      "permissions": ["Mail.Read", "Mail.ReadWrite"],
+      "unfamiliar_application": true
+    }
+  },
+  {
+    "event_type": "payment.payee_change",
+    "event_action": "change_bank_account",
+    "event_outcome": "success",
+    "event_time": "2026-08-05T12:02:00Z",
+    "actor": {"user": "finance.manager@example.local", "email": "finance.manager@example.local"},
+    "destination": {"bank_account": "GB00-DEMO-9988"},
+    "payload": {
+      "supplier": "Trusted Supplier Ltd",
+      "bank_account": "GB00-DEMO-9988",
+      "invoice": "INV-2026-081"
+    }
+  },
+  {
+    "event_type": "payment.approval",
+    "event_action": "approve_payment",
+    "event_outcome": "success",
+    "event_time": "2026-08-05T12:34:51Z",
+    "actor": {"user": "finance.manager@example.local", "email": "finance.manager@example.local"},
+    "destination": {"bank_account": "GB00-DEMO-9988"},
+    "payload": {
+      "bank_account": "GB00-DEMO-9988",
+      "amount": 48000,
+      "currency": "EUR",
+      "invoice": "INV-2026-081"
+    }
+  }
+]

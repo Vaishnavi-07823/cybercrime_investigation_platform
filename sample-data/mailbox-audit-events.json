@@ -1,0 +1,11 @@
+[
+  {
+    "timestamp": "2026-08-05T09:18:22Z",
+    "user": "finance.manager@example.local",
+    "action": "New-InboxRule",
+    "rule_name": "Archive supplier messages",
+    "forward_to": "external-archive@secure-mailbox.example",
+    "external": true,
+    "client_ip": "198.51.100.81"
+  }
+]
