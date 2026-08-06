@@ -9,6 +9,9 @@ services:
   - type: keyvalue
     name: cip-redis
     plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: Allow all connections
 
   # MinIO Object Store (Private service with persistent disk)
   - type: pserv
