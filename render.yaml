@@ -14,7 +14,8 @@ services:
   - type: pserv
     name: cip-minio
     runtime: image
-    image: minio/minio:latest
+    image:
+      url: minio/minio:latest
     startCommand: server /data --console-address ":9001"
     disk:
       name: minio-data
@@ -30,7 +31,8 @@ services:
   - type: pserv
     name: cip-neo4j
     runtime: image
-    image: neo4j:5-community
+    image:
+      url: neo4j:5-community
     disk:
       name: neo4j-data
       mountPath: /data
@@ -43,7 +45,8 @@ services:
   - type: pserv
     name: cip-opensearch
     runtime: image
-    image: opensearchproject/opensearch:2
+    image:
+      url: opensearchproject/opensearch:2
     disk:
       name: opensearch-data
       mountPath: /usr/share/opensearch/data
