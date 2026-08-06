@@ -11,7 +11,7 @@ redis:
 
 services:
   # MinIO Object Store (Private service with persistent disk)
-  - type: private
+  - type: pserv
     name: cip-minio
     env: image
     image: minio/minio:latest
@@ -27,7 +27,7 @@ services:
         value: minioadmin123
 
   # Neo4j Graph Database (Private service with persistent disk)
-  - type: private
+  - type: pserv
     name: cip-neo4j
     env: image
     image: neo4j:5-community
@@ -40,7 +40,7 @@ services:
         value: neo4j/neo4j_dev_password
 
   # OpenSearch Search Engine (Private service with persistent disk)
-  - type: private
+  - type: pserv
     name: cip-opensearch
     env: image
     image: opensearchproject/opensearch:2
