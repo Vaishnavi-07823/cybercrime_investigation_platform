@@ -4,16 +4,16 @@ databases:
     user: cybercrime
     plan: free
 
-redis:
-  - name: cip-redis
-    plan: free
-    ipAllowList: []
-
 services:
+  # Managed Redis Cache (KeyValue service type)
+  - type: keyvalue
+    name: cip-redis
+    plan: free
+
   # MinIO Object Store (Private service with persistent disk)
   - type: pserv
     name: cip-minio
-    env: image
+    runtime: image
     image: minio/minio:latest
     startCommand: server /data --console-address ":9001"
     disk:
@@ -29,7 +29,7 @@ services:
   # Neo4j Graph Database (Private service with persistent disk)
   - type: pserv
     name: cip-neo4j
-    env: image
+    runtime: image
     image: neo4j:5-community
     disk:
       name: neo4j-data
@@ -42,7 +42,7 @@ services:
   # OpenSearch Search Engine (Private service with persistent disk)
   - type: pserv
     name: cip-opensearch
-    env: image
+    runtime: image
     image: opensearchproject/opensearch:2
     disk:
       name: opensearch-data
@@ -61,7 +61,7 @@ services:
   # FastAPI Web Service
   - type: web
     name: cip-backend
-    env: docker
+    runtime: docker
     dockerfilePath: Dockerfile
     dockerContext: backend
     plan: starter
@@ -75,7 +75,8 @@ services:
           name: cip-postgres
           property: connectionString
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: cip-redis
           property: connectionString
       - key: MINIO_ENDPOINT
@@ -98,7 +99,7 @@ services:
   # Celery Worker Background Service
   - type: worker
     name: cip-worker
-    env: docker
+    runtime: docker
     dockerfilePath: Dockerfile
     dockerContext: backend
     plan: starter
@@ -111,7 +112,8 @@ services:
           name: cip-postgres
           property: connectionString
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: cip-redis
           property: connectionString
       - key: MINIO_ENDPOINT
