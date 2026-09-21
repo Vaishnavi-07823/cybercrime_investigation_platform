@@ -1,4 +1,4 @@
-[
+ [
   {
     "event_type": "identity.oauth_consent",
     "event_action": "grant",
