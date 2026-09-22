@@ -4,6 +4,7 @@ The root `docker-compose.yml` is the supported local-development deployment.
 
 For production, create separate environment overlays or Kubernetes manifests with:
 
+
 - TLS certificates and private service networking
 - Secrets supplied from a secrets manager
 - Persistent-volume encryption and backup policies
