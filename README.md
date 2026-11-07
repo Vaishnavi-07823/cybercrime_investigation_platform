@@ -1,5 +1,5 @@
 # Cybercrime Investigation Platform
-
+ 
 A runnable, evidence-first starter platform for cybercrime investigations. Built as a practical MVP around **Business Email Compromise (BEC)** cases, while keeping the architecture open to ransomware, cloud compromise, malware, and network-forensics use cases.
 
 > **Note:** This is a development scaffold, not a certified forensic product. Before using it for real legal matters, complete jurisdiction-specific legal review, forensic validation, security hardening, retention design, deployment isolation, and operational testing.
